@@ -50,20 +50,77 @@ def generate_recommendations(
                 "type": "behavioral"
             })
         
-        # Freelancer-specific: Check if income is variable
+        # Enhanced freelancer-specific recommendations
         if income_stats:
+            avg_income = income_stats.get('mean', 0)
             volatility = income_stats.get('volatility_coefficient', 0)
-            if volatility > 0.4:
+            min_income = income_stats.get('min', 0)
+            max_income = income_stats.get('max', 0)
+            
+            if volatility > 0.4:  # High income volatility
+                # Strategy for good months
+                good_month_threshold = avg_income * 1.2
+                extra_savings_potential = max_income - avg_income if max_income > avg_income else avg_income * 0.3
+                
+                recommendations.append({
+                    "category": "INCOME_STRATEGY",
+                    "action": f"In months earning >${good_month_threshold:,.0f}, save ${extra_savings_potential:,.0f} extra for lean periods",
+                    "potential_impact": float(extra_savings_potential),
+                    "difficulty": "easy",
+                    "type": "freelancer_planning",
+                    "priority": "high"
+                })
+                
+                # Strategy for lean months - find flexible categories
+                lean_month_threshold = avg_income * 0.8
+                flexible_cuts = []
+                
+                for category, data in sorted(category_analysis.items(), 
+                                            key=lambda x: x[1].elasticity if hasattr(x[1], 'elasticity') else 0, 
+                                            reverse=True)[:3]:
+                    elasticity = data.elasticity if hasattr(data, 'elasticity') else 0
+                    if elasticity > 0.5:
+                        potential_savings = data.total * 0.3 if hasattr(data, 'total') else data.monthly_savings * 0.3
+                        flexible_cuts.append({
+                            'category': category,
+                            'savings': potential_savings
+                        })
+                
+                if flexible_cuts:
+                    total_flexible_savings = sum(c['savings'] for c in flexible_cuts)
+                    categories_list = ', '.join(c['category'] for c in flexible_cuts[:2])
+                    
+                    recommendations.append({
+                        "category": "INCOME_STRATEGY",
+                        "action": f"In months earning <${lean_month_threshold:,.0f}, reduce {categories_list} spending by 30%",
+                        "potential_impact": float(total_flexible_savings),
+                        "difficulty": "moderate",
+                        "type": "freelancer_planning",
+                        "priority": "medium"
+                    })
+                
+                # Client diversity recommendation
+                payment_count = income_stats.get('payment_frequency', {}).get('count', 0)
+                if payment_count > 0 and payment_count < 3:
+                    recommendations.append({
+                        "category": "INCOME_DIVERSIFICATION",
+                        "action": "Increase client diversity to reduce income risk",
+                        "potential_impact": float(avg_income * 0.2),
+                        "difficulty": "challenging",
+                        "type": "freelancer_planning",
+                        "priority": "medium"
+                    })
+            elif volatility > 0.3:  # Moderate volatility
                 recommendations.append({
                     "category": "INCOME_VARIABILITY",
-                    "action": "With variable income, prioritize building a 3-6 month emergency fund",
+                    "action": "Build a 3-month emergency fund for income stability",
                     "potential_impact": 0,
                     "difficulty": "moderate",
                     "type": "freelancer_advice"
                 })
             
-            # Check if flexible categories exist
-            for category in category_analysis:
+            # Check if flexible categories exist for income-based adjustments
+            for category in list(category_analysis.keys())[:1]:  # Just add one recommendation
                 if category in FLEXIBLE_CATEGORIES:
                     recommendations.append({
                         "category": category,
@@ -72,7 +129,7 @@ def generate_recommendations(
                         "difficulty": "easy",
                         "type": "freelancer_advice"
                     })
-                    break  # Add only one flexible category recommendation
+                    break
     
     else:  # scenario_type == "increase"
         # Sort by categories where increase is most achievable
@@ -111,13 +168,28 @@ def generate_recommendations(
         # Freelancer-specific: Encourage business investment in good months
         if income_stats:
             avg_income = income_stats.get('mean', 0)
-            recommendations.append({
-                "category": "FREELANCER_STRATEGY",
-                "action": f"In months with above-average income (>${avg_income:.0f}), consider investing in business growth or emergency fund",
-                "potential_impact": 0,
-                "difficulty": "easy",
-                "type": "freelancer_advice"
-            })
+            volatility = income_stats.get('volatility_coefficient', 0)
+            max_income = income_stats.get('max', 0)
+            
+            good_month_threshold = avg_income * 1.2
+            surplus_potential = (max_income - avg_income) * 0.8 if max_income > avg_income else avg_income * 0.2
+            
+            if volatility > 0.3:
+                recommendations.append({
+                    "category": "FREELANCER_STRATEGY",
+                    "action": f"In months earning >${good_month_threshold:.0f}, invest ${surplus_potential:.0f} (80% of surplus) in business/emergency fund",
+                    "potential_impact": float(surplus_potential),
+                    "difficulty": "easy",
+                    "type": "freelancer_advice"
+                })
+            else:
+                recommendations.append({
+                    "category": "FREELANCER_STRATEGY",
+                    "action": f"With stable income, consider investing in business growth opportunities",
+                    "potential_impact": 0,
+                    "difficulty": "easy",
+                    "type": "freelancer_advice"
+                })
     
     return recommendations
 
