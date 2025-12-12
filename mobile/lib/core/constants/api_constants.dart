@@ -33,6 +33,11 @@ class ApiConstants {
   static const String emailTransactionsByBankEndpoint = '/email-transactions/transactions/by-bank';
   static const String emailTransactionsHealthEndpoint = '/email-transactions/health';
   
+  // Lean week endpoints
+  static const String leanWeekAnalysisEndpoint = '/lean-week/analysis';
+  static const String leanWeekForecastEndpoint = '/lean-week/forecast';
+  static const String leanWeekSmoothingRecommendationsEndpoint = '/lean-week/smoothing-recommendations';
+  
   // Headers
   static const String contentType = 'application/json';
   static const String accept = 'application/json';

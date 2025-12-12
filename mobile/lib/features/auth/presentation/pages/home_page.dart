@@ -9,6 +9,8 @@ import '../../../email_config/presentation/bloc/email_config_bloc.dart';
 import '../../../email_config/presentation/pages/email_config_page.dart';
 import '../../../email_transactions/presentation/bloc/email_transactions_bloc.dart';
 import '../../../email_transactions/presentation/pages/email_transactions_page.dart';
+import '../../../lean_week/presentation/bloc/lean_week_bloc.dart';
+import '../../../lean_week/presentation/pages/lean_week_page.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -268,6 +270,40 @@ class HomePage extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 16),
+                  // Lean Week Analysis button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => BlocProvider(
+                              create: (_) => sl<LeanWeekBloc>(),
+                              child: const LeanWeekPage(),
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.indigo,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      icon: const Icon(Icons.analytics_outlined),
+                      label: const Text(
+                        'Lean Week Analysis',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),

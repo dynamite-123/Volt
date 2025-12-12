@@ -54,6 +54,13 @@ import 'features/email_transactions/domain/usecases/get_queue_stats_usecase.dart
 import 'features/email_transactions/domain/usecases/get_recent_transactions_usecase.dart';
 import 'features/email_transactions/domain/usecases/get_transactions_by_bank_usecase.dart';
 import 'features/email_transactions/presentation/bloc/email_transactions_bloc.dart';
+import 'features/lean_week/data/datasources/lean_week_remote_data_source.dart';
+import 'features/lean_week/data/repositories/lean_week_repository_impl.dart';
+import 'features/lean_week/domain/repositories/lean_week_repository.dart';
+import 'features/lean_week/domain/usecases/get_cash_flow_forecast_usecase.dart';
+import 'features/lean_week/domain/usecases/get_income_smoothing_recommendations_usecase.dart';
+import 'features/lean_week/domain/usecases/get_lean_week_analysis_usecase.dart';
+import 'features/lean_week/presentation/bloc/lean_week_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -109,6 +116,9 @@ Future<void> initDependencies() async {
 
   // Email Transactions feature
   _initEmailTransactions();
+
+  // Lean Week feature
+  _initLeanWeek();
 }
 
 void _initAuth() {
@@ -285,6 +295,35 @@ void _initEmailTransactions() {
       getRecentTransactionsUseCase: sl(),
       getTransactionsByBankUseCase: sl(),
       getHealthStatusUseCase: sl(),
+    ),
+  );
+}
+
+void _initLeanWeek() {
+  // Data sources
+  sl.registerLazySingleton<LeanWeekRemoteDataSource>(
+    () => LeanWeekRemoteDataSourceImpl(sl()),
+  );
+
+  // Repository
+  sl.registerLazySingleton<LeanWeekRepository>(
+    () => LeanWeekRepositoryImpl(
+      remoteDataSource: sl(),
+      networkInfo: sl(),
+    ),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetLeanWeekAnalysisUseCase(sl()));
+  sl.registerLazySingleton(() => GetCashFlowForecastUseCase(sl()));
+  sl.registerLazySingleton(() => GetIncomeSmoothingRecommendationsUseCase(sl()));
+
+  // BLoC
+  sl.registerFactory(
+    () => LeanWeekBloc(
+      getLeanWeekAnalysisUseCase: sl(),
+      getCashFlowForecastUseCase: sl(),
+      getIncomeSmoothingRecommendationsUseCase: sl(),
     ),
   );
 }
