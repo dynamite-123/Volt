@@ -261,7 +261,10 @@ class LeanWeekPredictor:
             return {
                 'forecasts': [],
                 'warnings': ['Insufficient transaction history for accurate forecasting'],
-                'confidence': 0.0
+                'confidence': 0.0,
+                'income_volatility': 0.0,
+                'avg_monthly_income': 0.0,
+                'avg_monthly_expenses': 0.0
             }
         
         # Extract income and expense patterns
