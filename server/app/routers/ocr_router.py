@@ -42,6 +42,10 @@ async def extract_text_from_images(
 
         # Extract transaction using OCR Agent
         ocr_agent = OCRAgent()
+        transaction_data = await ocr_agent.extract_transaction(content)
+        
+        return transaction_data
+        
     except HTTPException:
         raise
     except Exception as e:
@@ -85,8 +89,4 @@ async def extract_transaction_from_text(
         raise
     except Exception as e:
         print(f"Error processing PDF: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Transaction extraction failed: {str(e)}")
-        raise
-    except Exception as e:
-        print(f"Error processing image: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Transaction extraction failed: {str(e)}")
