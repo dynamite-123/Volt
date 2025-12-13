@@ -53,4 +53,40 @@ class OCRAgent:
         print(f"Extracted transaction: {transaction}")
 
         return transaction
+
+    async def extract_transaction_from_text(self, text: str) -> TransactionCreate:
+        """Extract transaction details from text message using AI."""
+        
+        agent = Agent(
+            model=self.model,
+            output_type=TransactionCreate,
+            system_prompt=(
+                "You are a financial transaction extraction expert. Extract transaction details from SMS/text messages. "
+                "Fill in as many fields as possible from the provided text. Do NOT hallucinate. "
+                "\n\nFields to extract:"
+                "\n- amount (required): Transaction amount as a number"
+                "\n- merchant (required): Merchant or payee name"
+                "\n- timestamp (required): Transaction date and time"
+                "\n- type (required): Either 'debit' or 'credit'"
+                "\n- category: Spending category if determinable"
+                "\n- upiId: UPI ID if present"
+                "\n- transactionId: Transaction or reference ID"
+                "\n- balance: Account balance after transaction"
+                "\n- bankName: Bank name if mentioned"
+                "\n- accountNumber: Account number if visible"
+                "\n- rawMessage: Store the original message text"
+                "\n- user_id: Set to 1 (default)"
+                "\n\nOnly include fields that are clearly present in the text. Leave others as None."
+            )
+        )
+
+        # Run extraction
+        response = await agent.run(
+            f"Extract the transaction details from this message: {text}"
+        )
+
+        transaction = response.output
+        print(f"Extracted transaction from text: {transaction}")
+
+        return transaction
  
